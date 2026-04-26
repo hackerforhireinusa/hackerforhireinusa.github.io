@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hacker For Hire — USA</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --g: #00ff41; --dg: #00cc33; --bg: #030805;
+  --c1: #060f06; --c2: #091409; --c3: #0c1a0c;
+  --border: rgba(0,255,65,.12); --bb: rgba(0,255,65,.3);
+  --text: #d4f5d4; --dim: #3d6b3d; --dim2: #5a8f5a;
+  --red: #ff3355; --cyan: #00e5ff; --gold: #ffd700;
+  --glow: 0 0 20px rgba(0,255,65,.4);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;overflow-x:hidden;}
+::selection{background:rgba(0,255,65,.2);color:#fff;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--dg);border-radius:2px;}
+
+/* ── CANVAS ── */
+#matrix-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;opacity:.06;pointer-events:none;}
+
+/* ── SCANLINES ── */
+.scanlines{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.08) 3px,rgba(0,0,0,.08) 4px);}
+
+/* ── NOISE OVERLAY ── */
+body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;opacity:.03;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ── HEX BG ── */
+.hex-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.018;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100'%3E%3Cpath d='M28 0 L56 16 L56 48 L28 64 L0 48 L0 16 Z' fill='none' stroke='%2300ff41' stroke-width='1'/%3E%3C/svg%3E");
+  background-size:56px 64px;
+}
+
+.container{position:relative;z-index:2;max-width:1180px;margin:0 auto;padding:0 24px;}
+
+/* ── FLOATING BITS ── */
+.fb{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden;}
+.bit{position:absolute;color:rgba(0,255,65,.08);font-size:10px;font-family:'Share Tech Mono',monospace;animation:fall linear infinite;}
+@keyframes fall{0%{transform:translateY(-30px);opacity:0}5%{opacity:1}95%{opacity:1}100%{transform:translateY(105vh);opacity:0}}
+
+/* ── NAV ── */
+nav{border-bottom:1px solid var(--border);padding:16px 0;position:sticky;top:0;background:rgba(3,8,5,.92);backdrop-filter:blur(20px);z-index:100;}
+nav .container{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+.nav-brand{display:flex;align-items:center;gap:12px;}
+.nav-logo{font-family:'Orbitron',monospace;font-size:14px;font-weight:700;color:var(--g);letter-spacing:2px;text-shadow:0 0 15px var(--g);}
+.nav-dot-line{width:40px;height:1px;background:linear-gradient(90deg,var(--g),transparent);}
+.nav-links{display:flex;gap:24px;align-items:center;flex-wrap:wrap;}
+.nav-links a{color:var(--dim2);text-decoration:none;font-size:13px;font-weight:600;letter-spacing:1px;transition:all .2s;text-transform:uppercase;}
+.nav-links a:hover{color:var(--g);text-shadow:0 0 10px var(--g);}
+.nav-pill{display:flex;align-items:center;gap:7px;border:1px solid rgba(0,255,65,.25);padding:5px 12px;font-size:11px;font-family:'Share Tech Mono',monospace;color:var(--g);}
+.pulse-dot{width:6px;height:6px;border-radius:50%;background:var(--g);box-shadow:0 0 8px var(--g);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.5}}
+
+/* ── HERO ── */
+.hero{min-height:92vh;display:flex;align-items:center;justify-content:center;text-align:center;position:relative;padding:80px 0;}
+.hero-inner{max-width:800px;}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:10px;border:1px solid var(--border);background:rgba(0,255,65,.04);padding:7px 20px;margin-bottom:32px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--g);letter-spacing:3px;}
+.hero-line{width:30px;height:1px;background:var(--g);}
+.hero-flag{font-size:42px;margin-bottom:20px;filter:drop-shadow(0 0 20px rgba(0,255,65,.3));}
+.hero h1{font-family:'Orbitron',monospace;font-size:clamp(28px,6vw,68px);font-weight:900;line-height:1.05;letter-spacing:3px;margin-bottom:20px;}
+.hero h1 .line1{color:#fff;display:block;}
+.hero h1 .line2{color:var(--g);display:block;text-shadow:0 0 40px var(--g),0 0 80px rgba(0,255,65,.2);animation:glitch 6s infinite;}
+@keyframes glitch{0%,88%,100%{text-shadow:0 0 40px var(--g),0 0 80px rgba(0,255,65,.2);clip-path:none}
+  89%{clip-path:polygon(0 20%,100% 20%,100% 30%,0 30%);transform:translate(-4px,0);text-shadow:-3px 0 var(--red),3px 0 var(--cyan)}
+  90%{clip-path:polygon(0 60%,100% 60%,100% 75%,0 75%);transform:translate(4px,0)}
+  91%{clip-path:none;transform:translate(0);text-shadow:0 0 40px var(--g),0 0 80px rgba(0,255,65,.2)}}
+.hero-sub{font-size:clamp(15px,2vw,18px);color:var(--dim2);line-height:1.8;margin-bottom:40px;font-weight:400;max-width:580px;margin-left:auto;margin-right:auto;}
+.hero-sub strong{color:var(--g);font-weight:600;}
+.hero-btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
+.hero-scroll{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:3px;display:flex;flex-direction:column;align-items:center;gap:8px;}
+.scroll-line{width:1px;height:40px;background:linear-gradient(180deg,var(--g),transparent);animation:scrollAnim 2s infinite;}
+@keyframes scrollAnim{0%{height:0;opacity:0}50%{height:40px;opacity:1}100%{height:40px;opacity:0}}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:13px 32px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;text-decoration:none;transition:all .25s;position:relative;overflow:hidden;}
+.btn-primary{background:transparent;border:1px solid var(--g);color:var(--g);}
+.btn-primary::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(0,255,65,.12),transparent);transition:left .4s;}
+.btn-primary:hover::before{left:100%;}
+.btn-primary:hover{box-shadow:var(--glow),inset 0 0 20px rgba(0,255,65,.05);text-shadow:0 0 10px var(--g);}
+.btn-ghost{background:transparent;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6);}
+.btn-ghost:hover{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 20px rgba(0,229,255,.2);}
+
+/* ── SECTION ── */
+section{padding:80px 0;border-top:1px solid var(--border);}
+.sec-label{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--g);letter-spacing:4px;margin-bottom:8px;}
+.sec-title{font-family:'Orbitron',monospace;font-size:clamp(18px,3vw,30px);font-weight:700;color:#fff;margin-bottom:12px;}
+.sec-sub{font-size:15px;color:var(--dim2);margin-bottom:44px;line-height:1.7;max-width:560px;}
+
+/* ── STATS ── */
+.stats-band{background:linear-gradient(90deg,rgba(0,255,65,.03),rgba(0,255,65,.07),rgba(0,255,65,.03));border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:0;}
+.stats-inner{display:grid;grid-template-columns:repeat(5,1fr);}
+.stat-item{padding:28px 20px;text-align:center;border-right:1px solid var(--border);position:relative;}
+.stat-item:last-child{border-right:none;}
+.stat-num{font-family:'Orbitron',monospace;font-size:clamp(22px,3vw,34px);font-weight:900;color:var(--g);text-shadow:0 0 20px rgba(0,255,65,.5);}
+.stat-lbl{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim2);letter-spacing:2px;margin-top:4px;}
+
+/* ── TERMINAL ── */
+.terminal{border:1px solid var(--border);background:rgba(0,8,0,.7);backdrop-filter:blur(10px);margin:48px 0;position:relative;overflow:hidden;}
+.terminal::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--g),transparent);}
+.terminal-bar{display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:1px solid var(--border);background:rgba(0,0,0,.3);}
+.tbar-dots{display:flex;gap:6px;}
+.td{width:10px;height:10px;border-radius:50%;}
+.td-r{background:#ff5f56}.td-y{background:#ffbd2e}.td-g{background:#27c93f}
+.tbar-title{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--dim2);margin-left:8px;flex:1;text-align:center;}
+.tbar-live{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--g);letter-spacing:2px;animation:bb 1.5s infinite;}
+@keyframes bb{0%,100%{opacity:1}50%{opacity:.3}}
+.terminal-body{padding:16px 20px;min-height:160px;font-family:'Share Tech Mono',monospace;font-size:12px;line-height:2;}
+.tline{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tc-g{color:var(--g)}.tc-d{color:var(--dim2)}.tc-y{color:#ffbd2e}.tc-c{color:var(--cyan)}
+.tcursor{display:inline-block;animation:blink 1s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* ── SKILLS ── */
+.skills-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.skill-item{margin-bottom:4px;}
+.skill-hd{display:flex;justify-content:space-between;margin-bottom:6px;font-size:14px;font-weight:600;}
+.skill-hd span:first-child{color:var(--text);}
+.skill-hd span:last-child{color:var(--g);font-family:'Share Tech Mono',monospace;font-size:12px;}
+.skill-track{height:3px;background:rgba(255,255,255,.05);border:1px solid var(--border);position:relative;}
+.skill-fill{height:100%;background:linear-gradient(90deg,var(--dg),var(--g));position:relative;}
+.skill-fill::after{content:'';position:absolute;right:-1px;top:-2px;width:7px;height:7px;border-radius:50%;background:var(--g);box-shadow:0 0 8px var(--g);}
+
+/* ── SERVICES ── */
+.services-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1px;border:1px solid var(--border);}
+.svc-card{background:var(--c1);padding:28px;transition:all .3s;cursor:default;position:relative;overflow:hidden;}
+.svc-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:2px;background:linear-gradient(90deg,transparent,var(--g),transparent);transform:scaleX(0);transition:transform .4s;}
+.svc-card:hover::before{transform:scaleX(1);}
+.svc-card:hover{background:var(--c2);}
+.svc-icon-wrap{width:48px;height:48px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px;transition:all .3s;}
+.svc-card:hover .svc-icon-wrap{border-color:var(--g);box-shadow:0 0 12px rgba(0,255,65,.15);}
+.svc-name{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:var(--g);letter-spacing:1px;margin-bottom:10px;}
+.svc-desc{font-size:14px;color:var(--dim2);line-height:1.6;}
+.svc-price{margin-top:14px;font-family:'Share Tech Mono',monospace;font-size:13px;color:#fff;}
+.no-items{color:var(--dim);font-size:14px;padding:30px 0;}
+
+/* ── TOOLS ── */
+.tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
+.tool-card{background:var(--c1);border:1px solid var(--border);overflow:hidden;transition:all .3s;position:relative;}
+.tool-card:hover{border-color:rgba(0,255,65,.3);transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.4),0 0 0 1px rgba(0,255,65,.1);}
+.tool-img-wrap{width:100%;height:160px;background:var(--c2);overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;}
+.tool-img-wrap img{width:100%;height:100%;object-fit:cover;transition:transform .4s;}
+.tool-card:hover .tool-img-wrap img{transform:scale(1.05);}
+.tool-no-img{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--dim);letter-spacing:2px;}
+.tool-img-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(0deg,rgba(3,8,5,.8),transparent);pointer-events:none;}
+.tool-badge{position:absolute;top:10px;right:10px;background:rgba(0,255,65,.15);border:1px solid var(--border);color:var(--g);font-family:'Share Tech Mono',monospace;font-size:9px;padding:3px 8px;letter-spacing:1px;}
+.tool-body{padding:18px;}
+.tool-name{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:#fff;margin-bottom:6px;}
+.tool-price{font-size:20px;font-weight:700;color:var(--g);font-family:'Share Tech Mono',monospace;margin-bottom:8px;}
+.tool-desc{font-size:13px;color:var(--dim2);line-height:1.6;margin-bottom:14px;}
+.tool-buy{display:block;text-align:center;padding:9px;border:1px solid var(--border);color:var(--g);font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;background:rgba(0,255,65,.04);transition:all .2s;}
+.tool-buy:hover{background:rgba(0,255,65,.1);border-color:var(--g);}
+
+/* ── PAYMENT ── */
+.payment-wrap{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;}
+.pay-block{background:var(--c1);border:1px solid var(--border);padding:28px;}
+.pay-block-title{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:#fff;margin-bottom:20px;display:flex;align-items:center;gap:10px;}
+.pay-block-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.pay-methods-list{display:flex;flex-direction:column;gap:12px;}
+.pm-card{border:1px solid var(--border);background:var(--bg);padding:14px 16px;transition:border-color .2s;}
+.pm-card:hover{border-color:rgba(0,255,65,.25);}
+.pm-top{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.pm-icon{font-size:20px;}
+.pm-info{}
+.pm-name{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:var(--g);}
+.pm-net{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim2);letter-spacing:1px;}
+.pm-addr-row{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.4);padding:8px 12px;border:1px solid var(--border);}
+.pm-addr{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text);flex:1;word-break:break-all;}
+.copy-btn{flex-shrink:0;background:none;border:1px solid var(--border);color:var(--dim2);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:10px;padding:3px 10px;transition:all .2s;letter-spacing:1px;}
+.copy-btn:hover,.copy-btn.copied{border-color:var(--g);color:var(--g);}
+.no-pay{color:var(--dim);font-size:14px;}
+
+/* ── ORDER FORM ── */
+.order-form{background:var(--c1);border:1px solid var(--border);padding:28px;}
+.oform-title{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:#fff;margin-bottom:20px;display:flex;align-items:center;gap:10px;}
+.oform-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.fg{margin-bottom:14px;}
+.fg label{display:block;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim2);letter-spacing:2px;margin-bottom:6px;}
+.fg input,.fg textarea,.fg select{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:400;padding:10px 14px;outline:none;transition:border-color .2s;-webkit-appearance:none;}
+.fg input:focus,.fg textarea:focus,.fg select:focus{border-color:rgba(0,255,65,.4);box-shadow:0 0 12px rgba(0,255,65,.08);}
+.fg textarea{resize:vertical;min-height:80px;}
+.fg select option{background:var(--c1);}
+.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.upload-zone{border:1px dashed rgba(0,255,65,.25);background:rgba(0,255,65,.02);padding:24px 20px;text-align:center;cursor:pointer;transition:all .2s;position:relative;}
+.upload-zone:hover{border-color:rgba(0,255,65,.5);background:rgba(0,255,65,.05);}
+.upload-zone input{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;}
+.uz-icon{font-size:28px;margin-bottom:8px;}
+.uz-text{font-size:13px;color:var(--dim2);}.uz-text strong{color:var(--g);}
+.uz-sub{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);margin-top:4px;}
+.file-name{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--g);margin-top:8px;}
+.steps-list{counter-reset:steps;margin-bottom:24px;}
+.step{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;font-size:14px;color:var(--dim2);}
+.step-num{font-family:'Orbitron',monospace;font-size:11px;color:var(--g);border:1px solid var(--border);width:24px;height:24px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+/* ── REVIEWS ── */
+.reviews-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
+.review-card{background:var(--c1);border:1px solid var(--border);padding:22px;position:relative;overflow:hidden;}
+.review-card::before{content:'"';position:absolute;top:-10px;right:16px;font-size:80px;color:rgba(0,255,65,.06);font-family:'Orbitron',monospace;line-height:1;}
+.review-stars{color:var(--gold);font-size:14px;letter-spacing:2px;margin-bottom:12px;}
+.review-text{font-size:14px;color:var(--dim2);line-height:1.7;margin-bottom:14px;font-style:italic;}
+.review-author{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--g);}
+
+/* ── CONTACT ── */
+.contact-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;border:1px solid var(--border);}
+.cc{background:var(--c1);padding:30px;text-align:center;transition:background .3s;}
+.cc:hover{background:var(--c2);}
+.cc-icon{font-size:32px;margin-bottom:12px;}
+.cc-label{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim2);letter-spacing:3px;margin-bottom:8px;}
+.cc-val{font-size:15px;font-weight:600;color:var(--g);}
+.cc-val a{color:inherit;text-decoration:none;}
+.cc-val a:hover{text-shadow:0 0 10px var(--g);}
+
+/* ── FOOTER ── */
+footer{border-top:1px solid var(--border);padding:24px 0;}
+.footer-inner{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+.footer-logo{font-family:'Orbitron',monospace;font-size:12px;color:var(--g);letter-spacing:2px;text-shadow:0 0 10px var(--g);}
+.footer-copy{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:1px;}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:80px;right:24px;background:var(--c1);border:1px solid var(--g);color:var(--g);padding:10px 20px;font-family:'Share Tech Mono',monospace;font-size:12px;z-index:800;display:none;box-shadow:var(--glow);}
+
+/* ── IMAGE MODAL ── */
+#img-modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.95);z-index:1000;align-items:center;justify-content:center;cursor:zoom-out;}
+#img-modal.open{display:flex;}
+#img-modal img{max-width:90vw;max-height:90vh;border:1px solid var(--g);}
+
+/* ── ADMIN TOGGLE ── */
+#admin-toggle{position:fixed;bottom:24px;right:24px;z-index:200;width:44px;height:44px;border:1px solid rgba(0,255,65,.4);background:rgba(3,8,5,.9);color:var(--g);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--glow);transition:all .2s;backdrop-filter:blur(10px);}
+#admin-toggle:hover{background:rgba(0,255,65,.1);}
+
+/* ── ADMIN PANEL ── */
+#admin-panel{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.96);z-index:500;overflow-y:auto;}
+#admin-panel.open{display:block;}
+.admin-wrap{max-width:820px;margin:30px auto;padding:20px;}
+.admin-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border);}
+.admin-hd h2{font-family:'Orbitron',monospace;color:var(--g);font-size:15px;text-shadow:0 0 10px var(--g);letter-spacing:2px;}
+.close-btn{background:none;border:1px solid var(--border);color:var(--dim2);cursor:pointer;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .2s;}
+.close-btn:hover{border-color:var(--red);color:var(--red);}
+.admin-login{text-align:center;padding:60px 20px;}
+.admin-login h3{font-family:'Orbitron',monospace;color:var(--g);font-size:13px;letter-spacing:2px;margin-bottom:28px;}
+.admin-tabs{display:flex;gap:2px;margin-bottom:24px;flex-wrap:wrap;}
+.atab{flex:1;min-width:80px;padding:9px 6px;background:var(--c1);border:1px solid var(--border);color:var(--dim2);font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;transition:all .2s;text-align:center;}
+.atab.active{background:rgba(0,255,65,.08);border-color:var(--g);color:var(--g);}
+.tab-content{display:none;}.tab-content.active{display:block;}
+.fg-admin{margin-bottom:12px;}
+.fg-admin label{display:block;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim2);letter-spacing:2px;margin-bottom:5px;}
+.fg-admin input,.fg-admin textarea,.fg-admin select{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:13px;padding:9px 12px;outline:none;transition:border-color .2s;}
+.fg-admin input:focus,.fg-admin textarea:focus{border-color:rgba(0,255,65,.4);}
+.fg-admin textarea{resize:vertical;min-height:70px;}
+.fg-row-admin{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.alist-item{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--border);background:var(--c1);padding:10px 14px;margin-bottom:6px;}
+.ali-name{font-size:12px;color:var(--g);margin-bottom:2px;}
+.ali-sub{font-size:11px;color:var(--dim2);}
+.del-btn{background:none;border:1px solid rgba(255,51,85,.25);color:var(--red);cursor:pointer;font-size:11px;padding:3px 10px;font-family:'Share Tech Mono',monospace;transition:all .2s;flex-shrink:0;margin-left:10px;}
+.del-btn:hover{background:rgba(255,51,85,.1);border-color:var(--red);}
+.smsg{background:rgba(0,255,65,.06);border:1px solid rgba(0,255,65,.25);color:var(--g);padding:9px 14px;font-family:'Share Tech Mono',monospace;font-size:11px;margin-bottom:14px;display:none;}
+.asub{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:3px;margin:18px 0 10px;border-bottom:1px solid var(--border);padding-bottom:6px;}
+.save-note{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(0,255,65,.2);background:rgba(0,255,65,.04);padding:5px 14px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--g);letter-spacing:1px;margin-bottom:18px;}
+
+/* ORDER CARDS */
+.order-card{background:var(--c1);border:1px solid var(--border);padding:18px;margin-bottom:12px;}
+.order-card.is-new{border-color:rgba(255,189,46,.4);}
+.obadge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;margin-bottom:12px;}
+.obadge-new{background:rgba(255,189,46,.08);border:1px solid rgba(255,189,46,.4);color:#ffbd2e;}
+.obadge-done{background:rgba(0,255,65,.06);border:1px solid rgba(0,255,65,.2);color:var(--g);}
+.ometa{font-size:13px;color:var(--dim2);line-height:2;margin-bottom:12px;}
+.ometa span{color:var(--text);}
+.oimg img{max-width:100%;max-height:200px;border:1px solid var(--border);cursor:zoom-in;transition:opacity .2s;}
+.oimg img:hover{opacity:.85;}
+.oactions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+.mark-btn{background:none;border:1px solid rgba(0,255,65,.25);color:var(--g);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:10px;padding:5px 14px;letter-spacing:1px;transition:all .2s;}
+.mark-btn:hover{background:rgba(0,255,65,.1);}
+.new-count{font-family:'Orbitron',monospace;font-size:12px;color:#ffbd2e;margin-bottom:16px;letter-spacing:1px;}
+
+/* tool image upload in admin */
+.img-upload-zone{border:1px dashed rgba(0,255,65,.2);background:rgba(0,255,65,.01);padding:16px;text-align:center;cursor:pointer;transition:all .2s;position:relative;margin-bottom:8px;}
+.img-upload-zone:hover{border-color:rgba(0,255,65,.4);background:rgba(0,255,65,.04);}
+.img-upload-zone input{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;}
+.img-upload-zone p{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim2);letter-spacing:1px;}
+.img-thumb{width:80px;height:60px;object-fit:cover;border:1px solid var(--border);display:none;margin:6px auto 0;}
+
+@media(max-width:768px){
+  .payment-wrap{grid-template-columns:1fr;}
+  .skills-grid{grid-template-columns:1fr;}
+  .stats-inner{grid-template-columns:repeat(3,1fr);}
+  .contact-row{grid-template-columns:1fr;}
+  .fg-row{grid-template-columns:1fr;}
+  .fg-row-admin{grid-template-columns:1fr;}
+  .services-grid{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:480px){
+  .stats-inner{grid-template-columns:repeat(2,1fr);}
+  .services-grid{grid-template-columns:1fr;}
+  .tools-grid{grid-template-columns:1fr;}
+}
+</style>
+<!-- Firebase SDK — head mein load hoga sabse pehle -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+</head>
+<body>
+
+<canvas id="matrix-bg"></canvas>
+<div class="scanlines"></div>
+<div class="hex-bg"></div>
+<div class="fb" id="fb"></div>
+<div class="toast" id="toast"></div>
+<div id="img-modal" onclick="closeImgModal()"><img id="modal-img" src="" alt=""></div>
+
+<!-- NAV -->
+<nav>
+  <div class="container">
+    <div class="nav-brand">
+      <div class="nav-logo" id="nav-name">HACKER FOR HIRE</div>
+      <div class="nav-dot-line"></div>
+    </div>
+    <div class="nav-links">
+      <a href="#services">Services</a>
+      <a href="#tools">Tools</a>
+      <a href="#payment">Order</a>
+      <a href="#reviews">Reviews</a>
+      <a href="#contact">Contact</a>
+      <div class="nav-pill"><div class="pulse-dot"></div><span id="status-text">AVAILABLE</span></div>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <div class="hero-eyebrow"><div class="hero-line"></div>CERTIFIED ETHICAL HACKER<div class="hero-line"></div></div>
+      <div class="hero-flag">🇺🇸</div>
+      <h1><span class="line1">HACKER FOR HIRE</span><span class="line2">IN USA</span></h1>
+      <p class="hero-sub" id="hero-sub">Certified cybersecurity professional offering <strong>penetration testing</strong>, vulnerability assessments &amp; security audits. <strong>Your digital security</strong> is my mission.</p>
+      <div class="hero-btns">
+        <a href="#payment" class="btn btn-primary">Hire Me Now</a>
+        <a href="#services" class="btn btn-ghost">View Services</a>
+      </div>
+    </div>
+  </div>
+  <div class="hero-scroll"><span>SCROLL</span><div class="scroll-line"></div></div>
+</section>
+
+<!-- STATS -->
+<div class="stats-band">
+  <div class="container">
+    <div class="stats-inner">
+      <div class="stat-item"><div class="stat-num" id="stat1">150+</div><div class="stat-lbl">CLIENTS SECURED</div></div>
+      <div class="stat-item"><div class="stat-num" id="stat2">500+</div><div class="stat-lbl">VULNS FOUND</div></div>
+      <div class="stat-item"><div class="stat-num" id="stat3">5★</div><div class="stat-lbl">RATING</div></div>
+      <div class="stat-item"><div class="stat-num" id="stat4">24/7</div><div class="stat-lbl">SUPPORT</div></div>
+      <div class="stat-item"><div class="stat-num" id="stat5">99%</div><div class="stat-lbl">SUCCESS RATE</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- TERMINAL -->
+<div class="container">
+  <div class="terminal">
+    <div class="terminal-bar">
+      <div class="tbar-dots"><div class="td td-r"></div><div class="td td-y"></div><div class="td td-g"></div></div>
+      <div class="tbar-title">root@kali — bash</div>
+      <div class="tbar-live">● LIVE</div>
+    </div>
+    <div class="terminal-body" id="terminal-output"></div>
+  </div>
+</div>
+
+<!-- SKILLS -->
+<section id="about">
+  <div class="container">
+    <div class="sec-label">// EXPERTISE</div>
+    <div class="sec-title">Skill Matrix</div>
+    <div class="sec-sub">Trained across all major attack surfaces. Every engagement is methodical, authorized, and fully documented.</div>
+    <div class="skills-grid">
+      <div>
+        <div class="skill-item"><div class="skill-hd"><span>Web App Penetration Testing</span><span>95%</span></div><div class="skill-track"><div class="skill-fill" style="width:95%"></div></div></div>
+        <div class="skill-item" style="margin-top:18px"><div class="skill-hd"><span>Network Security &amp; Exploitation</span><span>90%</span></div><div class="skill-track"><div class="skill-fill" style="width:90%"></div></div></div>
+        <div class="skill-item" style="margin-top:18px"><div class="skill-hd"><span>Social Engineering &amp; OSINT</span><span>88%</span></div><div class="skill-track"><div class="skill-fill" style="width:88%"></div></div></div>
+      </div>
+      <div>
+        <div class="skill-item"><div class="skill-hd"><span>Malware Analysis &amp; Reverse Eng.</span><span>82%</span></div><div class="skill-track"><div class="skill-fill" style="width:82%"></div></div></div>
+        <div class="skill-item" style="margin-top:18px"><div class="skill-hd"><span>Cryptography &amp; Secure Comms</span><span>85%</span></div><div class="skill-track"><div class="skill-fill" style="width:85%"></div></div></div>
+        <div class="skill-item" style="margin-top:18px"><div class="skill-hd"><span>Cloud Security &amp; DevSecOps</span><span>78%</span></div><div class="skill-track"><div class="skill-fill" style="width:78%"></div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="container">
+    <div class="sec-label">// WHAT I OFFER</div>
+    <div class="sec-title">Services</div>
+    <div class="services-grid" id="services-grid"></div>
+  </div>
+</section>
+
+<!-- TOOLS -->
+<section id="tools">
+  <div class="container">
+    <div class="sec-label">// DIGITAL PRODUCTS</div>
+    <div class="sec-title">Tools &amp; Resources</div>
+    <div class="sec-sub">Premium cybersecurity tools and resources available for purchase.</div>
+    <div class="tools-grid" id="tools-grid"><div class="no-items">// No tools added yet. Use admin panel to add.</div></div>
+  </div>
+</section>
+
+<!-- PAYMENT -->
+<section id="payment">
+  <div class="container">
+    <div class="sec-label">// HOW TO ORDER</div>
+    <div class="sec-title">Payment &amp; Order</div>
+    <div class="payment-wrap">
+      <div>
+        <div class="pay-block" style="margin-bottom:16px">
+          <div class="pay-block-title">How It Works</div>
+          <div class="steps-list">
+            <div class="step"><div class="step-num">1</div><span>Browse services or tools above and choose what you need</span></div>
+            <div class="step"><div class="step-num">2</div><span>Send payment to one of the addresses below</span></div>
+            <div class="step"><div class="step-num">3</div><span>Fill out the order form &amp; upload payment screenshot</span></div>
+            <div class="step"><div class="step-num">4</div><span>I verify &amp; contact you within 24 hours ✓</span></div>
+          </div>
+        </div>
+        <div class="pay-block">
+          <div class="pay-block-title">Payment Methods</div>
+          <div class="pay-methods-list" id="payment-methods-display">
+            <div class="no-pay">// No payment methods added yet.</div>
+          </div>
+        </div>
+      </div>
+      <div class="order-form">
+        <div class="oform-title">Submit Your Order</div>
+        <div class="fg-row">
+          <div class="fg"><label>YOUR NAME</label><input type="text" id="o-name" placeholder="John D."></div>
+          <div class="fg"><label>EMAIL / TELEGRAM</label><input type="text" id="o-contact" placeholder="@username or email"></div>
+        </div>
+        <div class="fg"><label>SERVICE / TOOL</label>
+          <select id="o-service"><option value="">-- Select --</option></select>
+        </div>
+        <div class="fg"><label>PAYMENT METHOD</label>
+          <select id="o-paymethod"><option value="">-- Select --</option></select>
+        </div>
+        <div class="fg"><label>AMOUNT PAID</label><input type="text" id="o-amount" placeholder="e.g. $50 or 25 USDT"></div>
+        <div class="fg"><label>NOTES (optional)</label><textarea id="o-notes" placeholder="Any details..."></textarea></div>
+        <div class="fg">
+          <label>PAYMENT SCREENSHOT</label>
+          <div class="upload-zone">
+            <input type="file" id="o-screenshot" accept="image/*" onchange="handleFile(this)">
+            <div class="uz-icon">📸</div>
+            <div class="uz-text"><strong>Tap to upload</strong> payment screenshot</div>
+            <div class="uz-sub">JPG, PNG, GIF supported</div>
+            <div class="file-name" id="file-name"></div>
+          </div>
+        </div>
+        <div id="o-err" style="color:var(--red);font-family:'Share Tech Mono',monospace;font-size:11px;margin-bottom:10px;display:none"></div>
+        <div id="o-ok" style="display:none;background:rgba(0,255,65,.06);border:1px solid rgba(0,255,65,.3);color:var(--g);padding:14px;font-size:14px;margin-bottom:14px;line-height:1.8">
+          ✅ Order submitted! I'll verify your payment and reach out soon.
+        </div>
+        <button class="btn btn-primary" onclick="submitOrder()" style="width:100%;justify-content:center;font-size:14px;padding:14px">Submit Order</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REVIEWS -->
+<section id="reviews">
+  <div class="container">
+    <div class="sec-label">// CLIENT FEEDBACK</div>
+    <div class="sec-title">Testimonials</div>
+    <div class="reviews-grid" id="reviews-grid"></div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="container">
+    <div class="sec-label">// GET IN TOUCH</div>
+    <div class="sec-title">Contact</div>
+    <div class="contact-row">
+      <div class="cc"><div class="cc-icon">📧</div><div class="cc-label">EMAIL</div><div class="cc-val"><a href="#" id="contact-email">contact@example.com</a></div></div>
+      <div class="cc"><div class="cc-icon">💬</div><div class="cc-label">TELEGRAM</div><div class="cc-val"><a href="#" id="contact-telegram">@username</a></div></div>
+      <div class="cc"><div class="cc-icon">⚡</div><div class="cc-label">RESPONSE TIME</div><div class="cc-val" id="contact-response">Within 24 hours</div></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-logo" id="footer-logo">HACKER FOR HIRE — USA 🇺🇸</div>
+      <div class="footer-copy">// ALL ACTIVITIES LEGAL &amp; AUTHORIZED</div>
+    </div>
+  </div>
+</footer>
+
+<button id="admin-toggle" title="Admin">⚙</button>
+
+<!-- ADMIN PANEL -->
+<div id="admin-panel">
+  <div class="admin-wrap">
+    <div class="admin-hd">
+      <h2>// ADMIN CONTROL PANEL</h2>
+      <button class="close-btn" onclick="closeAdmin()">✕</button>
+    </div>
+
+    <div id="aLogin">
+      <div class="admin-login">
+        <h3>[ AUTHENTICATION REQUIRED ]</h3>
+        <div class="fg-admin"><label>PASSWORD</label><input type="password" id="aPass" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+        <div id="aErr" style="color:var(--red);font-family:'Share Tech Mono',monospace;font-size:11px;margin-bottom:10px;display:none">// ACCESS DENIED</div>
+        <button class="btn btn-primary" onclick="doLogin()" style="width:100%;justify-content:center">Login</button>
+        <p style="font-family:'Share Tech Mono',monospace;font-size:10px;color:#111;margin-top:16px;text-align:center">Default: admin123</p>
+      </div>
+    </div>
+
+    <div id="aDash" style="display:none">
+      <div class="save-note">💾 AUTO-SAVE ON — Data persists after refresh</div>
+      <div class="admin-tabs">
+        <button class="atab active" onclick="switchTab('tOrders',this)">ORDERS <span id="oNotif"></span></button>
+        <button class="atab" onclick="switchTab('tPay',this)">PAYMENT</button>
+        <button class="atab" onclick="switchTab('tTools',this)">TOOLS</button>
+        <button class="atab" onclick="switchTab('tSvc',this)">SERVICES</button>
+        <button class="atab" onclick="switchTab('tRev',this)">REVIEWS</button>
+        <button class="atab" onclick="switchTab('tProf',this)">PROFILE</button>
+        <button class="atab" onclick="switchTab('tContact',this)">CONTACT</button>
+        <button class="atab" onclick="switchTab('tPass',this)">PASSWORD</button>
+      </div>
+
+      <!-- ORDERS -->
+      <div id="tOrders" class="tab-content active">
+        <div class="new-count" id="newCountEl"></div>
+        <div id="aOrdersList"></div>
+      </div>
+
+      <!-- PAYMENT METHODS -->
+      <div id="tPay" class="tab-content">
+        <div class="smsg" id="mPay">// Payment method saved!</div>
+        <div class="fg-row-admin">
+          <div class="fg-admin"><label>METHOD NAME</label><input type="text" id="pm-name" placeholder="CashApp / USDT / Bitcoin"></div>
+          <div class="fg-admin"><label>NETWORK / LABEL</label><input type="text" id="pm-net" placeholder="TRC20 / ERC20 / BEP20"></div>
+        </div>
+        <div class="fg-admin"><label>ADDRESS / $CASHTAG</label><input type="text" id="pm-addr" placeholder="$yourcashtag or 0x123..."></div>
+        <div class="fg-admin"><label>ICON (emoji)</label><input type="text" id="pm-icon" placeholder="💵 ₿ 💎 💳"></div>
+        <button class="btn btn-primary" onclick="addPay()" style="margin-bottom:4px">+ Add Payment Method</button>
+        <div class="asub">EXISTING METHODS</div>
+        <div id="aPayList"></div>
+      </div>
+
+      <!-- TOOLS -->
+      <div id="tTools" class="tab-content">
+        <div class="smsg" id="mTool">// Tool saved!</div>
+        <div class="fg-row-admin">
+          <div class="fg-admin"><label>TOOL NAME</label><input type="text" id="t-name" placeholder="Security Scanner Pro"></div>
+          <div class="fg-admin"><label>PRICE</label><input type="text" id="t-price" placeholder="$49"></div>
+        </div>
+        <div class="fg-admin"><label>DESCRIPTION</label><textarea id="t-desc" placeholder="Tool description..."></textarea></div>
+        <div class="fg-row-admin">
+          <div class="fg-admin"><label>CATEGORY TAG</label><input type="text" id="t-tag" placeholder="RECON / EXPLOIT / OSINT"></div>
+          <div class="fg-admin"><label>BUY LINK (optional)</label><input type="text" id="t-link" placeholder="https://..."></div>
+        </div>
+        <div class="fg-admin">
+          <label>TOOL IMAGE</label>
+          <div class="img-upload-zone">
+            <input type="file" id="t-img" accept="image/*" onchange="handleToolImg(this)">
+            <p>📷 Tap to upload tool image</p>
+            <img id="t-img-preview" class="img-thumb" src="" alt="">
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="addTool()" style="margin-bottom:4px">+ Add Tool</button>
+        <div class="asub">EXISTING TOOLS</div>
+        <div id="aToolList"></div>
+      </div>
+
+      <!-- SERVICES -->
+      <div id="tSvc" class="tab-content">
+        <div class="smsg" id="mSvc">// Service saved!</div>
+        <div class="fg-row-admin">
+          <div class="fg-admin"><label>SERVICE NAME</label><input type="text" id="s-name" placeholder="Penetration Testing"></div>
+          <div class="fg-admin"><label>ICON (emoji)</label><input type="text" id="s-icon" placeholder="🔍"></div>
+        </div>
+        <div class="fg-admin"><label>DESCRIPTION</label><textarea id="s-desc" placeholder="Service description..."></textarea></div>
+        <div class="fg-admin"><label>STARTING PRICE (optional)</label><input type="text" id="s-price" placeholder="From $199"></div>
+        <button class="btn btn-primary" onclick="addSvc()" style="margin-bottom:4px">+ Add Service</button>
+        <div class="asub">EXISTING SERVICES</div>
+        <div id="aSvcList"></div>
+      </div>
+
+      <!-- REVIEWS -->
+      <div id="tRev" class="tab-content">
+        <div class="smsg" id="mRev">// Review saved!</div>
+        <div class="fg-row-admin">
+          <div class="fg-admin"><label>CLIENT NAME</label><input type="text" id="r-name" placeholder="John D."></div>
+          <div class="fg-admin"><label>STARS (1-5)</label><input type="number" id="r-stars" min="1" max="5" placeholder="5"></div>
+        </div>
+        <div class="fg-admin"><label>REVIEW TEXT</label><textarea id="r-text" placeholder="Client review..."></textarea></div>
+        <button class="btn btn-primary" onclick="addRev()" style="margin-bottom:4px">+ Add Review</button>
+        <div class="asub">EXISTING REVIEWS</div>
+        <div id="aRevList"></div>
+      </div>
+
+      <!-- PROFILE -->
+      <div id="tProf" class="tab-content">
+        <div class="smsg" id="mProf">// Profile saved!</div>
+        <div class="fg-row-admin">
+          <div class="fg-admin"><label>NAME / HANDLE</label><input type="text" id="p-name" placeholder="CyberGhost"></div>
+          <div class="fg-admin"><label>STATUS TEXT</label><input type="text" id="p-status" placeholder="AVAILABLE"></div>
+        </div>
+        <div class="fg-admin"><label>HERO SUBTITLE</label><textarea id="p-sub" placeholder="Short bio..."></textarea></div>
+        <div class="asub">STATS</div>
+        <div class="fg-row-admin">
+          <div class="fg-admin"><label>CLIENTS</label><input type="text" id="p-s1" placeholder="150+"></div>
+          <div class="fg-admin"><label>VULNS FOUND</label><input type="text" id="p-s2" placeholder="500+"></div>
+        </div>
+        <div class="fg-row-admin">
+          <div class="fg-admin"><label>RATING</label><input type="text" id="p-s3" placeholder="5★"></div>
+          <div class="fg-admin"><label>SUCCESS RATE</label><input type="text" id="p-s5" placeholder="99%"></div>
+        </div>
+        <button class="btn btn-primary" onclick="saveProf()">Save Profile</button>
+      </div>
+
+      <!-- CONTACT -->
+      <div id="tContact" class="tab-content">
+        <div class="smsg" id="mContact">// Contact saved!</div>
+        <div class="fg-admin"><label>EMAIL</label><input type="text" id="c-email" placeholder="your@email.com"></div>
+        <div class="fg-admin"><label>TELEGRAM</label><input type="text" id="c-telegram" placeholder="@yourhandle"></div>
+        <div class="fg-admin"><label>RESPONSE TIME</label><input type="text" id="c-resp" placeholder="Within 24 hours"></div>
+        <button class="btn btn-primary" onclick="saveContact()">Save Contact</button>
+      </div>
+
+      <!-- PASSWORD -->
+      <div id="tPass" class="tab-content">
+        <div class="smsg" id="mPass">// Password changed!</div>
+        <div class="fg-admin"><label>NEW PASSWORD</label><input type="password" id="np" placeholder="New password"></div>
+        <div class="fg-admin"><label>CONFIRM</label><input type="password" id="cp" placeholder="Confirm"></div>
+        <div id="pErr" style="color:var(--red);font-family:'Share Tech Mono',monospace;font-size:11px;margin-bottom:10px;display:none">// Passwords don't match</div>
+        <button class="btn btn-primary" onclick="changePass()">Change Password</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── FIREBASE INIT ──
+var firebaseConfig = {
+  apiKey: "AIzaSyDKVjLPdI8G7j4M7M8tUBR4NFD8dsWAuns",
+  authDomain: "khan-8f322.firebaseapp.com",
+  databaseURL: "https://khan-8f322-default-rtdb.firebaseio.com",
+  projectId: "khan-8f322",
+  storageBucket: "khan-8f322.firebasestorage.app",
+  messagingSenderId: "222155791996",
+  appId: "1:222155791996:web:087eb166fc7cf77a4c33f9",
+  measurementId: "G-4WHCZ1RV5M"
+};
+firebase.initializeApp(firebaseConfig);
+var db = firebase.database();
+
+// Orders real-time listener — jab bhi koi order aaye, admin panel update ho
+db.ref('orders').on('value', function(snap) {
+  var data = snap.val();
+  if (data) {
+    orders = Object.entries(data)
+      .map(function(entry){ return Object.assign({}, entry[1], {fbKey: entry[0]}); })
+      .sort(function(a,b){ return b.id - a.id; });
+  } else {
+    orders = [];
+  }
+  if (typeof renderOrders === 'function') renderOrders();
+});
+
+// ── MATRIX ──
+const canvas=document.getElementById('matrix-bg');
+const ctx=canvas.getContext('2d');
+function rsz(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+rsz();window.addEventListener('resize',rsz);
+let drops=[];function iDrops(){drops=Array(Math.floor(canvas.width/16)).fill(1);}iDrops();window.addEventListener('resize',iDrops);
+function drawM(){ctx.fillStyle='rgba(0,0,0,0.05)';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#00ff41';ctx.font='12px Share Tech Mono';drops.forEach((y,i)=>{ctx.fillText(String.fromCharCode(0x30A0+Math.random()*96),i*16,y*16);if(y*16>canvas.height&&Math.random()>.975)drops[i]=0;drops[i]++;});}
+setInterval(drawM,55);
+
+// ── FLOATING BITS ──
+const bitArr=['0','1','{}','//','&&','>>','0x','FF','</>','rm -rf','sudo','ssh','nc','nmap'];
+const fbEl=document.getElementById('fb');
+for(let i=0;i<22;i++){const e=document.createElement('div');e.className='bit';e.textContent=bitArr[Math.floor(Math.random()*bitArr.length)];e.style.left=Math.random()*100+'vw';e.style.animationDuration=(10+Math.random()*16)+'s';e.style.animationDelay=(-Math.random()*20)+'s';fbEl.appendChild(e);}
+
+// ── TERMINAL ──
+const tLines=[
+  {c:'tc-g',t:'root@kali:~# nmap -sV -p- 192.168.1.105'},
+  {c:'tc-d',t:'Starting Nmap 7.94 ...'},
+  {c:'tc-g',t:'80/tcp   open  http     Apache 2.4.50'},
+  {c:'tc-y',t:'[!] CVE-2021-41773 Path Traversal — CRITICAL'},
+  {c:'tc-g',t:'root@kali:~# sqlmap -u "target.com/?id=1"'},
+  {c:'tc-d',t:'[*] Testing parameter: id'},
+  {c:'tc-c',t:'[+] UNION injection found — DB: MySQL 8.0'},
+  {c:'tc-g',t:'[+] Tables: users, admin, transactions, logs'},
+  {c:'tc-y',t:'[!] PII exposure confirmed — reporting client'},
+  {c:'tc-g',t:'root@kali:~# msfconsole -q'},
+  {c:'tc-d',t:'msf6 > use exploit/multi/handler'},
+  {c:'tc-g',t:'[*] Reverse TCP handler 0.0.0.0:4444'},
+  {c:'tc-g',t:'[✓] Session 1 opened — Target compromised'},
+  {c:'tc-c',t:'[✓] Remediation report sent to client.'},
+];
+const tEl=document.getElementById('terminal-output');
+let tI=0;
+function addTLine(){if(tI>=tLines.length){tI=0;tEl.innerHTML='';}const l=tLines[tI++];const d=document.createElement('div');d.className='tline';d.innerHTML=`<span class="${l.c}">${l.t}<span class="tcursor">▌</span></span>`;tEl.appendChild(d);if(tEl.children.length>8)tEl.removeChild(tEl.children[0]);tEl.scrollTop=tEl.scrollHeight;}
+addTLine();setInterval(addTLine,2000);
+
+// ── LOCALSTORAGE ──
+const LS={get:(k,d)=>{try{const v=localStorage.getItem('hfh_'+k);return v?JSON.parse(v):d;}catch{return d;}},set:(k,v)=>{try{localStorage.setItem('hfh_'+k,JSON.stringify(v));}catch{}}};
+
+// DEFAULTS
+const DSVC=[
+  {id:1,name:'PENETRATION TESTING',icon:'🔍',desc:'Full-scope pen testing for web apps, networks & infrastructure.',price:'From $299'},
+  {id:2,name:'VULNERABILITY ASSESSMENT',icon:'🛡️',desc:'Comprehensive scanning to identify security weaknesses.',price:'From $199'},
+  {id:3,name:'WEB APP SECURITY',icon:'🌐',desc:'OWASP Top 10 — SQL injection, XSS, auth bypass. Full report.',price:'From $249'},
+  {id:4,name:'NETWORK SECURITY AUDIT',icon:'📡',desc:'Deep network analysis, firewall review, IDS setup.',price:'From $349'},
+  {id:5,name:'BUG BOUNTY CONSULTING',icon:'🐛',desc:'Setup your bug bounty program or assist with disclosure.',price:'From $149'},
+  {id:6,name:'SECURITY TRAINING',icon:'📚',desc:'Train your team against phishing and social engineering.',price:'From $99'},
+];
+const DREV=[
+  {id:1,name:'John M.',stars:5,text:'Found 3 critical vulnerabilities our previous team missed. Incredibly professional and thorough.'},
+  {id:2,name:'Sarah K.',stars:5,text:'Exceptional network audit with clear remediation steps. Will definitely hire again!'},
+  {id:3,name:'TechCo CEO',stars:5,text:'Fast, discreet, and thorough. Our security posture improved dramatically.'},
+];
+
+let adminPass=LS.get('pass','admin123');
+let tools=LS.get('tools',[]);
+let services=LS.get('services',DSVC);
+let reviews=LS.get('reviews',DREV);
+let payMethods=LS.get('pay',[]);
+let orders=LS.get('orders',[]);
+let profile=LS.get('profile',{});
+let contact=LS.get('contact',{});
+let toolImgData=null;
+
+// ── RENDERS ──
+function renderSvc(){
+  const g=document.getElementById('services-grid');
+  if(!services.length){g.innerHTML='<div class="no-items" style="padding:40px">// No services yet.</div>';return;}
+  g.innerHTML=services.map(s=>`<div class="svc-card"><div class="svc-icon-wrap">${s.icon}</div><div class="svc-name">${s.name}</div><div class="svc-desc">${s.desc}</div>${s.price?`<div class="svc-price">${s.price}</div>`:''}</div>`).join('');
+  rebuildSvcDrop();
+}
+function renderTools(){
+  const g=document.getElementById('tools-grid');
+  if(!tools.length){g.innerHTML='<div class="no-items">// No tools added yet.</div>';return;}
+  g.innerHTML=tools.map(t=>`
+    <div class="tool-card">
+      <div class="tool-img-wrap">
+        ${t.img?`<img src="${t.img}" alt="${t.name}"><div class="tool-img-overlay"></div>`:`<div class="tool-no-img">NO IMAGE</div>`}
+        <div class="tool-badge">${t.tag||'TOOL'}</div>
+      </div>
+      <div class="tool-body">
+        <div class="tool-name">${t.name}</div>
+        <div class="tool-price">${t.price}</div>
+        <div class="tool-desc">${t.desc}</div>
+        ${t.link?`<a href="${t.link}" target="_blank" class="tool-buy">Buy Now →</a>`:''}
+      </div>
+    </div>`).join('');
+  rebuildSvcDrop();
+}
+function renderReviews(){
+  const g=document.getElementById('reviews-grid');
+  if(!reviews.length){g.innerHTML='<div class="no-items">// No reviews yet.</div>';return;}
+  g.innerHTML=reviews.map(r=>`<div class="review-card"><div class="review-stars">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</div><div class="review-text">"${r.text}"</div><div class="review-author">— ${r.name}</div></div>`).join('');
+}
+function renderPay(){
+  const g=document.getElementById('payment-methods-display');
+  if(!payMethods.length){g.innerHTML='<div class="no-pay">// No payment methods added yet.</div>';rebuildPayDrop();return;}
+  g.innerHTML=payMethods.map(pm=>`
+    <div class="pm-card">
+      <div class="pm-top"><div class="pm-icon">${pm.icon||'💳'}</div><div class="pm-info"><div class="pm-name">${pm.name}</div>${pm.net?`<div class="pm-net">${pm.net}</div>`:''}</div></div>
+      <div class="pm-addr-row"><div class="pm-addr">${pm.addr}</div><button class="copy-btn" onclick="copyAddr('${pm.addr}',this)">COPY</button></div>
+    </div>`).join('');
+  rebuildPayDrop();
+}
+function rebuildSvcDrop(){
+  const s=document.getElementById('o-service');const cur=s.value;
+  s.innerHTML='<option value="">-- Select service/tool --</option>';
+  services.forEach(x=>s.innerHTML+=`<option value="${x.name}">${x.icon} ${x.name}${x.price?' — '+x.price:''}</option>`);
+  tools.forEach(x=>s.innerHTML+=`<option value="${x.name}">[TOOL] ${x.name} — ${x.price}</option>`);
+  s.value=cur;
+}
+function rebuildPayDrop(){
+  const s=document.getElementById('o-paymethod');
+  s.innerHTML='<option value="">-- Select --</option>';
+  payMethods.forEach(pm=>s.innerHTML+=`<option value="${pm.name}${pm.net?' ('+pm.net+')':''}">${pm.icon||'💳'} ${pm.name}${pm.net?' — '+pm.net:''}</option>`);
+}
+function refreshAdminLists(){
+  // tools
+  document.getElementById('aToolList').innerHTML=tools.length?tools.map(t=>`<div class="alist-item"><div class="flex-1"><div class="ali-name">${t.name}</div><div class="ali-sub">${t.price} — ${t.tag||''}</div></div><button class="del-btn" onclick="delTool(${t.id})">DELETE</button></div>`).join(''):'<div style="color:var(--dim);font-size:13px;padding:8px 0">// None yet</div>';
+  // services
+  document.getElementById('aSvcList').innerHTML=services.length?services.map(s=>`<div class="alist-item"><div class="flex-1"><div class="ali-name">${s.icon} ${s.name}</div><div class="ali-sub">${s.price||'—'}</div></div><button class="del-btn" onclick="delSvc(${s.id})">DELETE</button></div>`).join(''):'<div style="color:var(--dim);font-size:13px;padding:8px 0">// None yet</div>';
+  // reviews
+  document.getElementById('aRevList').innerHTML=reviews.length?reviews.map(r=>`<div class="alist-item"><div class="flex-1"><div class="ali-name">${r.name}</div><div class="ali-sub">${'★'.repeat(r.stars)} — ${r.text.substring(0,45)}...</div></div><button class="del-btn" onclick="delRev(${r.id})">DELETE</button></div>`).join(''):'<div style="color:var(--dim);font-size:13px;padding:8px 0">// None yet</div>';
+  // pay
+  document.getElementById('aPayList').innerHTML=payMethods.length?payMethods.map(pm=>`<div class="alist-item"><div class="flex-1"><div class="ali-name">${pm.icon||'💳'} ${pm.name}${pm.net?' — '+pm.net:''}</div><div class="ali-sub" style="word-break:break-all">${pm.addr}</div></div><button class="del-btn" onclick="delPay(${pm.id})">DELETE</button></div>`).join(''):'<div style="color:var(--dim);font-size:13px;padding:8px 0">// None yet</div>';
+  renderOrders();
+}
+
+// ── ORDERS ──
+function renderOrders(){
+  const newC=orders.filter(o=>o.status==='new').length;
+  document.getElementById('newCountEl').textContent=newC?`⚠ ${newC} NEW ORDER${newC>1?'S':''} PENDING`:'// All orders reviewed.';
+  document.getElementById('oNotif').textContent=newC?` (${newC})`:'';
+  const el=document.getElementById('aOrdersList');
+  if(!orders.length){el.innerHTML='<div style="color:var(--dim);font-size:14px">// No orders yet.</div>';return;}
+  el.innerHTML=orders.map(o=>`
+    <div class="order-card${o.status==='new'?' is-new':''}">
+      <span class="obadge ${o.status==='new'?'obadge-new':'obadge-done'}">${o.status==='new'?'⚡ NEW':'✓ DONE'}</span>
+      <div class="ometa">
+        🕐 <span>${o.date}</span><br>
+        👤 <span>${o.name}</span> — <span>${o.contact}</span><br>
+        🛒 <span>${o.service}</span><br>
+        💳 <span>${o.paymethod||'—'}</span> — <span>${o.amount}</span><br>
+        ${o.notes?`📝 <span>${o.notes}</span>`:''}
+      </div>
+      ${o.screenshot?`<div class="oimg"><img src="${o.screenshot}" alt="proof" onclick="openImg('${o.screenshot}')"><br><small style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim)">tap to enlarge</small></div>`:''}
+      <div class="oactions">
+        ${o.status==='new'?`<button class="mark-btn" onclick="markDone(${o.id})">[ MARK DONE ]</button>`:''}
+        <button class="del-btn" onclick="delOrder(${o.id})">DELETE</button>
+      </div>
+    </div>`).join('');
+}
+function markDone(id){
+  var o = orders.find(function(x){ return x.id === id; });
+  if(o && o.fbKey){
+    db.ref('orders/' + o.fbKey).update({status: 'done'});
+  } else {
+    orders = orders.map(function(x){ return x.id===id ? Object.assign({},x,{status:'done'}) : x; });
+    LS.set('orders', orders); renderOrders();
+  }
+}
+function delOrder(id){
+  var o = orders.find(function(x){ return x.id === id; });
+  if(o && o.fbKey){
+    db.ref('orders/' + o.fbKey).remove();
+  } else {
+    orders = orders.filter(function(x){ return x.id !== id; });
+    LS.set('orders', orders); renderOrders();
+  }
+}
+
+// ── SUBMIT ORDER ──
+let ssData=null;
+function handleFile(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{ssData=e.target.result;document.getElementById('file-name').textContent='✓ '+f.name;};r.readAsDataURL(f);}
+function handleToolImg(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{toolImgData=e.target.result;const prev=document.getElementById('t-img-preview');prev.src=e.target.result;prev.style.display='block';};r.readAsDataURL(f);}
+function submitOrder(){
+  var name = document.getElementById('o-name').value.trim();
+  var ct   = document.getElementById('o-contact').value.trim();
+  var svc  = document.getElementById('o-service').value;
+  var pm   = document.getElementById('o-paymethod').value;
+  var amt  = document.getElementById('o-amount').value.trim();
+  var notes= document.getElementById('o-notes').value.trim();
+  var errEl= document.getElementById('o-err');
+  if(!name||!ct||!svc||!amt){errEl.textContent='// Fill all required fields.';errEl.style.display='block';setTimeout(function(){errEl.style.display='none';},3000);return;}
+  if(!ssData){errEl.textContent='// Upload payment screenshot.';errEl.style.display='block';setTimeout(function(){errEl.style.display='none';},3000);return;}
+  var newOrder = {id: Date.now(), name:name, contact:ct, service:svc, paymethod:pm, amount:amt, notes:notes, screenshot:ssData, date: new Date().toLocaleString(), status:'new'};
+  // Submit karo Firebase mein
+  db.ref('orders').push(newOrder)
+    .then(function(){
+      ['o-name','o-contact','o-amount','o-notes'].forEach(function(id){ document.getElementById(id).value=''; });
+      document.getElementById('o-service').value='';
+      document.getElementById('o-paymethod').value='';
+      document.getElementById('file-name').textContent='';
+      ssData = null;
+      document.getElementById('o-ok').style.display='block';
+      setTimeout(function(){ document.getElementById('o-ok').style.display='none'; }, 5000);
+    })
+    .catch(function(err){
+      errEl.textContent='// Submit error: ' + err.message;
+      errEl.style.display='block';
+      setTimeout(function(){ errEl.style.display='none'; }, 5000);
+    });
+}
+
+// ── COPY ──
+function copyAddr(addr,btn){navigator.clipboard.writeText(addr).then(()=>{btn.textContent='COPIED!';btn.classList.add('copied');setTimeout(()=>{btn.textContent='COPY';btn.classList.remove('copied');},2000);});}
+
+// ── IMG MODAL ──
+function openImg(src){document.getElementById('modal-img').src=src;document.getElementById('img-modal').classList.add('open');}
+function closeImgModal(){document.getElementById('img-modal').classList.remove('open');}
+
+// ── TOAST ──
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2500);}
+
+// ── ADMIN ──
+document.getElementById('admin-toggle').onclick=()=>document.getElementById('admin-panel').classList.add('open');
+function closeAdmin(){document.getElementById('admin-panel').classList.remove('open');}
+function doLogin(){
+  const p=document.getElementById('aPass').value;
+  if(p===adminPass){document.getElementById('aLogin').style.display='none';document.getElementById('aDash').style.display='block';refreshAdminLists();}
+  else{const e=document.getElementById('aErr');e.style.display='block';setTimeout(()=>e.style.display='none',2000);}
+}
+function switchTab(id,btn){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.atab').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');btn.classList.add('active');
+  if(id==='tOrders')renderOrders();
+}
+function smsg(id){const e=document.getElementById(id);e.style.display='block';setTimeout(()=>e.style.display='none',2500);}
+
+// PAYMENT
+function addPay(){const n=document.getElementById('pm-name').value.trim(),a=document.getElementById('pm-addr').value.trim();if(!n||!a)return;payMethods.push({id:Date.now(),name:n,net:document.getElementById('pm-net').value.trim(),addr:a,icon:document.getElementById('pm-icon').value.trim()||'💳'});LS.set('pay',payMethods);['pm-name','pm-net','pm-addr','pm-icon'].forEach(id=>document.getElementById(id).value='');smsg('mPay');renderPay();refreshAdminLists();}
+function delPay(id){payMethods=payMethods.filter(p=>p.id!==id);LS.set('pay',payMethods);renderPay();refreshAdminLists();}
+
+// TOOLS
+function addTool(){const n=document.getElementById('t-name').value.trim(),p=document.getElementById('t-price').value.trim();if(!n||!p)return;tools.push({id:Date.now(),name:n,price:p,desc:document.getElementById('t-desc').value.trim(),tag:document.getElementById('t-tag').value.trim()||'TOOL',link:document.getElementById('t-link').value.trim(),img:toolImgData||null});LS.set('tools',tools);['t-name','t-price','t-desc','t-tag','t-link'].forEach(id=>document.getElementById(id).value='');toolImgData=null;document.getElementById('t-img-preview').style.display='none';smsg('mTool');renderTools();refreshAdminLists();}
+function delTool(id){tools=tools.filter(t=>t.id!==id);LS.set('tools',tools);renderTools();refreshAdminLists();}
+
+// SERVICES
+function addSvc(){const n=document.getElementById('s-name').value.trim();if(!n)return;services.push({id:Date.now(),name:n,icon:document.getElementById('s-icon').value.trim()||'🔧',desc:document.getElementById('s-desc').value.trim(),price:document.getElementById('s-price').value.trim()});LS.set('services',services);['s-name','s-icon','s-desc','s-price'].forEach(id=>document.getElementById(id).value='');smsg('mSvc');renderSvc();refreshAdminLists();}
+function delSvc(id){services=services.filter(s=>s.id!==id);LS.set('services',services);renderSvc();refreshAdminLists();}
+
+// REVIEWS
+function addRev(){const n=document.getElementById('r-name').value.trim(),t=document.getElementById('r-text').value.trim();if(!n||!t)return;reviews.push({id:Date.now(),name:n,stars:parseInt(document.getElementById('r-stars').value)||5,text:t});LS.set('reviews',reviews);['r-name','r-stars','r-text'].forEach(id=>document.getElementById(id).value='');smsg('mRev');renderReviews();refreshAdminLists();}
+function delRev(id){reviews=reviews.filter(r=>r.id!==id);LS.set('reviews',reviews);renderReviews();refreshAdminLists();}
+
+// PROFILE
+function applyProf(){if(profile.name)document.getElementById('nav-name').textContent=profile.name.toUpperCase();if(profile.sub)document.getElementById('hero-sub').innerHTML=profile.sub;if(profile.status)document.getElementById('status-text').textContent=profile.status;[['p-s1','stat1'],['p-s2','stat2'],['p-s3','stat3'],['p-s5','stat5']].forEach(([,s])=>{});if(profile.s1)document.getElementById('stat1').textContent=profile.s1;if(profile.s2)document.getElementById('stat2').textContent=profile.s2;if(profile.s3)document.getElementById('stat3').textContent=profile.s3;if(profile.s5)document.getElementById('stat5').textContent=profile.s5;}
+function saveProf(){profile={name:document.getElementById('p-name').value.trim(),sub:document.getElementById('p-sub').value.trim(),status:document.getElementById('p-status').value.trim(),s1:document.getElementById('p-s1').value.trim(),s2:document.getElementById('p-s2').value.trim(),s3:document.getElementById('p-s3').value.trim(),s5:document.getElementById('p-s5').value.trim()};LS.set('profile',profile);applyProf();smsg('mProf');}
+
+// CONTACT
+function applyContact(){if(contact.email){const e=document.getElementById('contact-email');e.textContent=contact.email;e.href='mailto:'+contact.email;}if(contact.tg){const t=document.getElementById('contact-telegram');t.textContent=contact.tg;t.href='https://t.me/'+contact.tg.replace('@','');}if(contact.resp)document.getElementById('contact-response').textContent=contact.resp;}
+function saveContact(){contact={email:document.getElementById('c-email').value.trim(),tg:document.getElementById('c-telegram').value.trim(),resp:document.getElementById('c-resp').value.trim()};LS.set('contact',contact);applyContact();smsg('mContact');}
+
+// PASSWORD
+function changePass(){const np=document.getElementById('np').value,cp=document.getElementById('cp').value;if(np!==cp||np.length<4){document.getElementById('pErr').style.display='block';setTimeout(()=>document.getElementById('pErr').style.display='none',2000);return;}adminPass=np;LS.set('pass',np);document.getElementById('np').value='';document.getElementById('cp').value='';smsg('mPass');}
+
+// ── INIT ──
+applyProf();applyContact();renderSvc();renderTools();renderReviews();renderPay();
+</script>
+</body>
+</html>
